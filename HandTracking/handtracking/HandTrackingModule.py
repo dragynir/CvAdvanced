@@ -4,6 +4,9 @@ import time
 
 
 class HandDetector:
+
+    HandLandmark = mp.solutions.hands.HandLandmark
+
     def __init__(self, static_image_mode=False,
                       max_num_hands=2,
                       min_detection_confidence=0.7,
@@ -15,6 +18,7 @@ class HandDetector:
         self.tracking_confidence = min_tracking_confidence
 
         self.mpHands = mp.solutions.hands
+        self.HandLandmark = self.mpHands.HandLandmark
 
         self.hands = self.mpHands.Hands(static_image_mode=self.mode,
                               max_num_hands=self.max_hands,
@@ -63,12 +67,17 @@ class HandDetector:
 
         hand_landmarks = self.detection_results[hand_id]['raw']
         self.mpDraw.draw_landmarks(img, hand_landmarks, self.mpHands.HAND_CONNECTIONS)
+        return img
+
+    def draw_landmark(self, img, landmark_number, color=(255, 0, 255), size=5):
+
+        for ind, hand in self.detection_results.items():
+            landmark = hand['parsed'][landmark_number]
+            cx = landmark['x']
+            cy = landmark['y']
+            cv2.circle(img, (cx, cy), size, color, cv2.FILLED)
 
         return img
-        # for landmark in self.current_landmarks:
-        #     if id == mpHands.HandLandmark.INDEX_FINGER_TIP:
-        #         cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
-
 
 def main():
     
@@ -82,9 +91,10 @@ def main():
     while True:
         success, img = cap.read()
         img, results, process_fps = hand_detector.process(img)
-        
-        hand_detector.draw_hand(img, hand_id=0)
 
+        hand_detector.draw_hand(img, hand_id=0)
+        hand_detector.draw_hand(img, hand_id=1)
+        hand_detector.draw_landmark(img, HandDetector.HandLandmark.INDEX_FINGER_TIP)
         current_time = time.time()
         fps = hand_detector.calculate_fps(current_time, previous_time)
         previous_time = current_time
