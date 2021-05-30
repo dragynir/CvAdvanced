@@ -90,6 +90,7 @@ def main():
 
     while True:
         success, img = cap.read()
+        img = cv2.flip(img, 1)
         img, results, process_fps = hand_detector.process(img)
 
         hand_detector.draw_hand(img, hand_id=0)
